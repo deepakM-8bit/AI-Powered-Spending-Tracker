@@ -1,6 +1,10 @@
 import { useEffect,useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import ExpensesForm from "./components/ExpensesForm";
+import Login from "./pages/login.jsx";
+import Signup from "./pages/signup.jsx";
+import Dashboard from "./pages/dashboard.jsx";
 
 
 const API = "http://localhost:3000/api/expenses";
@@ -23,6 +27,13 @@ const App = () =>{
   return(
     <>
       
+      <Router>
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
       <ExpensesForm />
       <table>
         <thead>
