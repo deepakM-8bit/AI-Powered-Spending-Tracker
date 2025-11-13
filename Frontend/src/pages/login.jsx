@@ -1,65 +1,60 @@
-import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import "./Login.css"; // import the styles
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [loginForm, setLoginForm] = useState(
+    {
+      name:"",
+      password:""
+    });
 
-  const handleLogin = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const res = await axios.post("http://localhost:3000/api/auth/login")
-
-    const data = await res.json();
-
-    if (res.ok) {
-      localStorage.setItem("token", data.token);
-      alert("Login successful!");
-      navigate("/dashboard");
-    } else {
-      alert(data.error || "Invalid credentials");
-    }
+    console.log("Email:", loginForm.email);
+    console.log("Password:", loginForm.password);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-80">
-        <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-        <form onSubmit={handleLogin} className="flex flex-col space-y-4">
+    <div className="login-container">
+      <div className="login-card">
+        
+        {/* Avatar Section */}
+        <div className="avatar-wrapper">
+          <div className="avatar-circle">
+            <span className="avatar-text">Your Photo</span>
+          </div>
+        </div>
+
+        <h2 className="login-title">Login</h2>
+
+        <form onSubmit={handleSubmit}>
+          {/* Email Field */}
+          <label className="login-label">Email</label>
           <input
+            className="login-input"
             type="email"
-            placeholder="Email"
-            className="border p-2 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            value={loginForm.email}
+            onChange={(e) => setLoginForm(...loginForm,e.target.value)}
             required
           />
+
+          {/* Password Field */}
+          <label className="login-label">Password</label>
           <input
+            className="login-input"
             type="password"
-            placeholder="Password"
-            className="border p-2 rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            value={loginForm.password}
+            onChange={(e) => setLoginForm(...loginForm,e.target.value)}
             required
           />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
+
+          {/* Login Button */}
+          <button type="submit" className="login-btn">
             Login
           </button>
         </form>
-        <p className="text-sm text-center mt-4">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/signup")}
-            className="text-blue-500 cursor-pointer hover:underline"
-          >
-            Sign Up
-          </span>
-        </p>
       </div>
     </div>
   );
