@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- FIX HORIZONTAL SCROLL (safe & global) --- */
+html, body {
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Blob container to prevent horizontal scroll */
+.blob-container {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Opening animation (hero section) */
+.opening-init {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.opening-show {
+  animation: slideDown 1.5s ease-out forwards;
+}
+
+/* Existing animations */
+@keyframes floatSlow {
+  0% { transform: translate(-20%, 0); }
+  50% { transform: translate(-20%, 20px); }
+  100% { transform: translate(-20%, 0); }
+}
+
+@keyframes floatSlow2 {
+  0% { transform: translate(20%, 0); }
+  50% { transform: translate(20%, -20px); }
+  100% { transform: translate(20%, 0); }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-floatSlow { animation: floatSlow 6s ease-in-out infinite; }
+.animate-floatSlow2 { animation: floatSlow2 7s ease-in-out infinite; }
+.animate-slideDown { animation: slideDown 1.5s ease-out forwards; }

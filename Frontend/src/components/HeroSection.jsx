@@ -60,7 +60,7 @@ export default function HeroSection() {
   return (
     <section className="text-center">
       <h2 className="text-3xl font-bold">
-        Hey {user?.name || "User"} 👋
+        Good to see you, {user?.name || "User"} 😊.
       </h2>
       <p className="text-gray-600 mt-2">
         Here's your expense overview.
