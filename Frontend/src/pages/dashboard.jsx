@@ -20,7 +20,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <div className="pt-28 max-w-5xl mx-auto px-4 pb-20 space-y-14">
+      <div className="pt-28 max-w-7xl mx-auto px-4 pb-20 space-y-14">
 
         <HeroSection />
 

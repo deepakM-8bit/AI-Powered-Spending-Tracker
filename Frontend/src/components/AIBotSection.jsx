@@ -37,7 +37,7 @@ export default function AiInsights() {
         </button>
       </div>
 
-      <div className="mt-4 whitespace-pre-wrap text-gray-700">
+      <div className="mt-4 prose prose-sm whitespace-pre-wrap text-gray-900">
         {insights || "Click generate to get AI-based spending analysis."}
       </div>
     </div>
