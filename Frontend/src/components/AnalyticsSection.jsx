@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useAuth } from "../context/useAuth.jsx";
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext.jsx";
+
 
 import {
   ResponsiveContainer,
@@ -24,6 +27,8 @@ const COLORS = [
   "#ef6ab4", "#6366f1", "#14b8a6", "#fb7185"
 ];
 
+
+// -------- UTILITIES ----------
 function toNumber(x) {
   if (x === null || x === undefined) return 0;
   const n = Number(x);
@@ -48,6 +53,9 @@ function normalizeMonth(v) {
 
 export default function AnalyticsSection() {
   const { token } = useAuth();
+  const { theme } = useContext(ThemeContext);
+  const axisColor = theme === "dark" ? "#e5e7eb" : "#1f2937";  
+
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,7 +76,7 @@ export default function AnalyticsSection() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
 
-  // Fetch Analytics
+  // -------- FETCH ANALYTICS ----------
   const fetchAnalytics = useCallback(async () => {
     if (!token) {
       setLoading(false);
@@ -107,7 +115,7 @@ export default function AnalyticsSection() {
         .sort((a, b) => (a.month > b.month ? 1 : -1));
 
       const trend = dailyTrend.map((d) => ({
-        date: d.date, // YYYY-MM-DD
+        date: d.date,
         total: toNumber(d.total),
       }));
 
@@ -144,7 +152,6 @@ export default function AnalyticsSection() {
         total: allTimeTotal,
       });
 
-      // auto select defaults
       if (!selectedMonth && month.length) {
         setSelectedMonth(month[month.length - 1].month);
       }
@@ -180,49 +187,32 @@ export default function AnalyticsSection() {
     total,
   } = data;
 
-  const availableMonths = monthlyTotals.map((m) => m.month);
   const availableYears = yearlyTotals.map((y) => y.year);
 
-  // Apply filter to all charts
+  // -------- FILTERED DATA ----------
   const filtered = useMemo(() => {
     if (filterType === "all") {
-      return {
-        pie: categoryTotals,
-        bar: monthlyTotals,
-        line: dailyTrend,
-        total,
-      };
+      return { pie: categoryTotals, bar: monthlyTotals, line: dailyTrend, total };
     }
-
     if (filterType === "month") {
-      if (!selectedMonth)
-        return { pie: [], bar: [], line: [], total: 0 };
-
+      if (!selectedMonth) return { pie: [], bar: [], line: [], total: 0 };
       const bar = monthlyTotals.filter((m) => m.month === selectedMonth);
       const line = dailyTrend.filter((d) => d.date.startsWith(selectedMonth));
       const pie = monthlyCategoryTotals
         .filter((m) => m.month === selectedMonth)
         .map((x) => ({ category: x.category, total: x.total }));
-      const mTotal = bar.length ? bar[0].total : 0;
-
-      return { pie, bar, line, total: mTotal };
+      return { pie, bar, line, total: bar.length ? bar[0].total : 0 };
     }
-
     if (filterType === "year") {
-      if (!selectedYear)
-        return { pie: [], bar: [], line: [], total: 0 };
-
+      if (!selectedYear) return { pie: [], bar: [], line: [], total: 0 };
       const bar = monthlyTotals.filter((m) => m.month.startsWith(selectedYear));
       const line = dailyTrend.filter((d) => d.date.startsWith(selectedYear));
       const pie = yearlyCategoryTotals
         .filter((y) => y.year === selectedYear)
         .map((x) => ({ category: x.category, total: x.total }));
       const yRow = yearlyTotals.find((y) => y.year === selectedYear);
-      const yTotal = yRow ? yRow.total : 0;
-
-      return { pie, bar, line, total: yTotal };
+      return { pie, bar, line, total: yRow ? yRow.total : 0 };
     }
-
     return { pie: categoryTotals, bar: monthlyTotals, line: dailyTrend, total };
   }, [
     filterType,
@@ -239,36 +229,48 @@ export default function AnalyticsSection() {
 
   const { pie, bar, line } = filtered;
 
+  // ---------- LOADING ----------
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-2xl shadow">
-        <p className="text-gray-500">Loading...</p>
+      <div className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl p-6 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg">
+        <p className="text-gray-700 dark:text-gray-200">Loading...</p>
       </div>
     );
   }
 
+  // ---------- ERROR ----------
   if (error) {
     return (
-      <div className="bg-white p-6 rounded-2xl shadow">
+      <div className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl p-6 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-lg">
         <p className="text-red-500">{error}</p>
       </div>
     );
   }
 
+  // ---------- MAIN UI ----------
   return (
-    <div className="bg-white p-6 rounded-2xl shadow">
-      {/* Filters */}
+    <div className="
+      bg-white/30 dark:bg-gray-800/30
+      backdrop-blur-xl border border-white/30 dark:border-gray-700/40
+      p-6 rounded-2xl shadow-lg transition-all duration-300
+    ">
+
+      {/* Header + Filters */}
       <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
         <div>
-          <h3 className="text-xl font-semibold">Analytics</h3>
-          <p className="text-sm text-gray-500">Filtered financial insights</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Analytics
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Filtered financial insights
+          </p>
         </div>
 
         <div className="flex gap-3 items-center">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="border p-2 rounded-lg"
+            className="border border-gray-300 dark:border-gray-600 bg-white/40 dark:bg-gray-700/40 text-gray-800 dark:text-gray-100 p-2 rounded-lg"
           >
             <option value="all">All Time</option>
             <option value="month">Monthly</option>
@@ -280,7 +282,7 @@ export default function AnalyticsSection() {
               type="month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="border p-2 rounded-lg"
+              className="border border-gray-300 dark:border-gray-600 bg-white/40 dark:bg-gray-700/40 text-gray-800 dark:text-gray-100 p-2 rounded-lg"
             />
           )}
 
@@ -288,7 +290,7 @@ export default function AnalyticsSection() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="border p-2 rounded-lg"
+              className="border border-gray-300 dark:border-gray-600 bg-white/40 dark:bg-gray-700/40 text-gray-800 dark:text-gray-100 p-2 rounded-lg"
             >
               <option value="">Select year</option>
               {availableYears.map((y) => (
@@ -303,17 +305,21 @@ export default function AnalyticsSection() {
 
       {/* Total */}
       <div className="mb-6">
-        <p className="text-gray-500 text-sm">Total Spent</p>
-        <p className="text-2xl font-bold text-blue-600">
+        <p className="text-gray-600 dark:text-gray-400 text-sm">Total Spent</p>
+        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
           ₹{filtered.total.toFixed(2)}
         </p>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* PIE */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-medium mb-2 text-sm">Spending by Category</p>
+
+        {/* PIE CHART */}
+        <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-700/40 p-4 rounded-xl">
+          <p className="font-medium mb-2 text-sm text-gray-900 dark:text-gray-100">
+            Spending by Category
+          </p>
+
           <div style={{ width: "100%", height: 260 }}>
             <ResponsiveContainer>
               <PieChart>
@@ -329,22 +335,36 @@ export default function AnalyticsSection() {
                   ))}
                 </Pie>
                 <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
-                <Legend />
+                <Legend wrapperStyle={{ color: "var(--text-color)" }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* BAR */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-medium mb-2 text-sm">Monthly Spend</p>
+        {/* BAR CHART */}
+        <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-700/40 p-4 rounded-xl">
+          <p className="font-medium mb-2 text-sm text-gray-900 dark:text-gray-100">
+            Monthly Spend
+          </p>
+
           <div style={{ width: "100%", height: 260 }}>
             <ResponsiveContainer>
               <BarChart data={bar}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.15)" />
+
+                <XAxis
+                  dataKey="month"
+                  stroke={axisColor}
+                  tick={{ fill: axisColor }}
+                />
+
+                <YAxis
+                  stroke={axisColor}
+                  tick={{ fill: axisColor }}
+                />
+
                 <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
+
                 <Bar dataKey="total">
                   {bar.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -355,24 +375,47 @@ export default function AnalyticsSection() {
           </div>
         </div>
 
-        {/* LINE */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="font-medium mb-2 text-sm">Daily Trend</p>
+        {/* LINE CHART */}
+        <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-700/40 p-4 rounded-xl">
+          <p className="font-medium mb-2 text-sm text-gray-900 dark:text-gray-100">
+            Daily Trend
+          </p>
+
           <div style={{ width: "100%", height: 260 }}>
             <ResponsiveContainer>
               <LineChart data={line}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.15)" />
+
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: axisColor }}
+                  stroke={axisColor}
+                  
+                  tickFormatter={(value) => {
+                    const d = new Date(value);
+                    if (isNaN(d)) return value;
+                    return `${String(d.getDate()).padStart(2, "0")}-${String(
+                      d.getMonth() + 1
+                    ).padStart(2, "0")}-${d.getFullYear()}`;
+                  }}
+                />
+
+                <YAxis
+                  tick={{ fill: axisColor }}
+                  stroke={axisColor}
+                />
+
                 <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
                 <Line type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
+
       </div>
 
-      {/* small list / legend for categories */}
+      {/* CATEGORY LIST */}
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
         {pie.length ? (
           pie.slice(0, 12).map((c, i) => (
@@ -382,17 +425,20 @@ export default function AnalyticsSection() {
                 className="w-3 h-3 rounded-full inline-block"
               />
               <div>
-                <div className="text-sm font-medium">{c.category || "Others"}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {c.category || "Others"}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-300">
                   ₹{toNumber(c.total).toFixed(2)}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No category data</p>
+          <p className="text-gray-600 dark:text-gray-400">No category data</p>
         )}
       </div>
+
     </div>
   );
 }
