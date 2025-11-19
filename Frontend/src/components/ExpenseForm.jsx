@@ -48,6 +48,7 @@ export default function ExpenseForm() {
     <form
       onSubmit={handleSubmit}
       className="
+        fade-up
         p-6 rounded-2xl shadow-xl mt-8
         bg-white/30 dark:bg-gray-800/30
         backdrop-blur-xl border border-white/40 dark:border-gray-700/40

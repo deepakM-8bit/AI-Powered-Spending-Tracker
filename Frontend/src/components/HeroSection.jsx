@@ -80,8 +80,8 @@ export default function HeroSection() {
   }, [token]);
 
   return (
-    <section className="text-center mt-4">
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 transition-colors">
+    <section className="opening-show text-center mt-4">
+      <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-100 transition-colors">
         Good to see you, {user?.name || "User"} 😊
       </h2>
 

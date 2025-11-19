@@ -68,7 +68,7 @@ export default function Login() {
 
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-5 mt-2"
+            className="opening-show flex flex-col gap-5 mt-2"
           >
             <div>
               <label className="text-gray-700 dark:text-gray-300 font-medium">
@@ -86,7 +86,7 @@ export default function Login() {
                   bg-white/60 dark:bg-gray-700/50 
                   border border-gray-300 dark:border-gray-600
                   focus:outline-none focus:ring-2 
-                  focus:ring-blue-500 dark:focus:ring-blue-400
+                  focus:ring-blue-500 dark:text-gray-100 dark:focus:ring-blue-400
                   backdrop-blur-sm placeholder-gray-400 dark:placeholder-gray-500
                   transition
                 "
@@ -109,7 +109,7 @@ export default function Login() {
                   bg-white/60 dark:bg-gray-700/50 
                   border border-gray-300 dark:border-gray-600
                   focus:outline-none focus:ring-2 
-                  focus:ring-blue-500 dark:focus:ring-blue-400
+                  focus:ring-blue-500 dark:text-gray-100 dark:focus:ring-blue-400
                   backdrop-blur-sm placeholder-gray-400 dark:placeholder-gray-500
                   transition
                 "

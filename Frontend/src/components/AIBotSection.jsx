@@ -1,14 +1,39 @@
 import { useAuth } from "../context/useAuth.jsx";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 
 export default function AiInsights() {
   const { token } = useAuth();
+
   const [insights, setInsights] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Rotating loading messages
+  const loadingTexts = [
+    "Analyzing...",
+    "Getting your analytics...",
+    "Reviewing your spendings...",
+    "Preparing the insights..."
+  ];
+
+  const [loadingIndex, setLoadingIndex] = useState(0);
+  const intervalRef = useRef(null);
+
   const generateInsights = async () => {
     setLoading(true);
+    setLoadingIndex(0);
+
+    // Start rotating text
+    intervalRef.current = setInterval(() => {
+      setLoadingIndex((prev) => {
+        if (prev < loadingTexts.length - 1){
+          return prev + 1;
+        } else {
+          clearInterval(intervalRef.current);
+          return prev;
+        }
+      });
+    }, 4000);
 
     try {
       const res = await axios.get("http://localhost:3000/api/ai/insights", {
@@ -21,6 +46,8 @@ export default function AiInsights() {
       setInsights("AI is currently busy. Try again in a moment ❤️");
     }
 
+    // Stop text rotation
+    clearInterval(intervalRef.current);
     setLoading(false);
   };
 
@@ -60,14 +87,14 @@ export default function AiInsights() {
           {/* Inner Background */}
           <span
             className="
-              relative px-1 py-1 z-10 block w-full h-full rounded-lg
+              relative px-3 py-1 z-10 block rounded-lg
               bg-sky-400/20 dark:bg-blue-900/30
               backdrop-blur-md
               hover:bg-blue-700/30 dark:hover:bg-blue-300/20
               transition
             "
           >
-            {loading ? "Analyzing..." : "Generate Insights"}
+            {loading ? loadingTexts[loadingIndex] : "Generate Insights"}
           </span>
         </button>
       </div>

@@ -170,7 +170,7 @@ export default function ExpenseList() {
 
   return (
     <div
-      className="
+      className="fade-up
         bg-white/30 dark:bg-gray-800/30
         backdrop-blur-xl border border-white/40 dark:border-gray-700/40
         p-6 rounded-2xl shadow-xl mt-10

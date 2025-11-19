@@ -73,7 +73,7 @@ export default function Signup() {
             <p className="text-green-600 text-center mb-4">{successMsg}</p>
           )}
 
-          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+          <form className="opening-show flex flex-col gap-5" onSubmit={handleSubmit}>
 
             {/* Full Name */}
             <div>
