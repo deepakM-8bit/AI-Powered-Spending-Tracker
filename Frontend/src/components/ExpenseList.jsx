@@ -518,7 +518,7 @@ export default function ExpenseList() {
                 onChange={handleEditChange}
                 className="
                   p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
-                  border border-gray-300/50 dark:border-gray-700/40
+                  border border-gray-300/50 dark:text-gray-100 dark:border-gray-700/40
                 "
               />
 
@@ -528,7 +528,7 @@ export default function ExpenseList() {
                 value={selectedExpense.amount || ""}
                 onChange={handleEditChange}
                 className="
-                  p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
+                  p-3 rounded-xl bg-white/60 dark:text-gray-100 dark:bg-gray-800/60 
                   border border-gray-300/50 dark:border-gray-700/40
                 "
               />
@@ -538,7 +538,7 @@ export default function ExpenseList() {
                 value={selectedExpense.category || "Others"}
                 onChange={handleEditChange}
                 className="
-                  p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
+                  p-3 rounded-xl bg-white/60 dark:text-gray-100 dark:bg-gray-900/70 
                   border border-gray-300/50 dark:border-gray-700/40
                 "
               >
@@ -565,7 +565,7 @@ export default function ExpenseList() {
                 value={selectedExpense.date?.split("T")[0] || ""}
                 onChange={handleEditChange}
                 className="
-                  p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
+                  p-3 rounded-xl bg-white/60 dark:text-gray-100 dark:bg-gray-800/60 
                   border border-gray-300/50 dark:border-gray-700/40
                 "
               />
@@ -575,7 +575,7 @@ export default function ExpenseList() {
                 value={selectedExpense.recurring || "none"}
                 onChange={handleEditChange}
                 className="
-                  p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
+                  p-3 rounded-xl bg-white/60 dark:text-gray-100 dark:bg-gray-800/60 
                   border border-gray-300/50 dark:border-gray-700/40
                 "
               >
@@ -590,7 +590,7 @@ export default function ExpenseList() {
                 value={selectedExpense.note || ""}
                 onChange={handleEditChange}
                 className="
-                  p-3 rounded-xl bg-white/60 dark:bg-gray-800/60 
+                  p-3 rounded-xl bg-white/60 dark:text-gray-100 dark:bg-gray-800/60 
                   border border-gray-300/50 dark:border-gray-700/40 md:col-span-2
                 "
                 placeholder="Note"
