@@ -1,6 +1,6 @@
 import pool from "../db.js";
 
-console.log('DB connected successfully!');
+console.log('DB connected successfully!');;
 
 //get all expenses
 export const getExpenses = async (req,res) => {

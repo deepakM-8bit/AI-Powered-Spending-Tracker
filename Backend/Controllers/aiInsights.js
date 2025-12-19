@@ -3,7 +3,7 @@ import pool from "../db.js";
 
 
 const models = [
-    "gemini-2.5-pro",
+    
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite"
 ]
@@ -102,7 +102,7 @@ ${JSON.stringify(analyticsData, null, 2)}
             console.log(`failed : ${modelName}`,err.message || err.status);
 
             //retry only if server error
-            if([429, 500, 502].includes(error.status)){
+            if([429, 500, 502].includes(err.status)){
                 lastError=err;
                 continue;
             }

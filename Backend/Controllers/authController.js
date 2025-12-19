@@ -27,7 +27,6 @@ export const registerUser = async (req,res)=> {
 //login user
 export const loginUser = async (req,res)=>{
         const {email,password} = req.body;
-        console.log("req.body:",req.body);
         try{
             //check if user exist
             const result = await pool.query("SELECT * FROM users WHERE email=$1",[email]);
