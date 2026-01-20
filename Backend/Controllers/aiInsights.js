@@ -2,8 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../db.js";
 
 
-const models = [
-    
+const models = [  
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite"
 ]

@@ -173,7 +173,7 @@ export default function LandingPage() {
             <div className="flex gap-4 items-center">
               <a href="#" className="text-sm hover:underline">Privacy</a>
               <a href="#" className="text-sm hover:underline">Terms</a>
-              <a href="#" className="text-sm hover:underline">Contact</a>
+              <a href="https://www.linkedin.com/in/deepakm-fullstack-dev/" className="text-sm hover:underline">Contact</a>
             </div>
           </div>
 
