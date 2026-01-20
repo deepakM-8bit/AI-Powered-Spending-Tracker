@@ -1,11 +1,14 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../db.js";
 
+const models = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-2.0-flash",
+];
 
-const models = [  
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite"
-]
+const getStatus = (err) =>
+  err?.status || err?.statusCode || err?.response?.status || null;
 
 export const aiInsights = async (req, res) => {
   const userId = req.user.id;
@@ -43,10 +46,8 @@ export const aiInsights = async (req, res) => {
       trend: trend.rows,
     };
 
-    // Gemini API
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-    //  PROMPT
     const prompt = `
 You are an AI financial insights engine. 
 Generate short, clear, bullet-point insights only. No long paragraphs.
@@ -63,7 +64,7 @@ FORMAT STRICTLY LIKE THIS:
 • (Short note about increases/decreases)
 • (Short note about wasteful spending)
 
- 📅 Behavior Patterns
+📅 Behavior Patterns
 • Weekday vs weekend summary (1 line)
 • Highest spend day (1 line)
 • Any unusual pattern (1 line)
@@ -84,49 +85,56 @@ Make everything short, clear, and professional.
 USER DATA:
 ${JSON.stringify(analyticsData, null, 2)}
 `;
-    let responseText=null;
-    let lastError=null;
 
-    for(const modelName of models){
-        try{
-            console.log(`try model: ${modelName}`);
+    let responseText = null;
+    let lastError = null;
+    let modelUsed = null;
 
-            const model = genAI.getGenerativeModel({model:modelName});
-            const result = await model.generateContent(prompt);
-            responseText = result.response.text();
+    for (const modelName of models) {
+      try {
+        console.log(`Trying model: ${modelName}`);
 
-            console.log(`success -> model used: ${modelName}`);
-            break;
-        }catch(err){
-            console.log(`failed : ${modelName}`,err.message || err.status);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
 
-            //retry only if server error
-            if([429, 500, 502].includes(err.status)){
-                lastError=err;
-                continue;
-            }
+        responseText = result.response.text();
+        modelUsed = modelName;
 
-            lastError = err;
-            break;
-        }
-    }
-    
-    //all models failed
-    if(!responseText){
-        return res.status(500).json({
-            message:"All ai models are temporarily unavailable. try again shortly.",
-            error: lastError?.message
+        console.log(`Success - model used: ${modelName}`);
+        break;
+      } catch (err) {
+        const status = getStatus(err);
+        lastError = err;
+
+        console.log(`Failed model: ${modelName}`, {
+          status,
+          message: err?.message,
         });
+
+        // if overloaded / rate limited / server unstable => try next model
+        if ([429, 500, 502, 503, 504].includes(status)) {
+          continue;
+        }
+
+        // unknown error -> still try next model (recommended)
+        continue;
+      }
     }
 
+    if (!responseText) {
+      return res.status(503).json({
+        message:
+          "All AI models are temporarily unavailable (overloaded). Try again shortly.",
+        error: lastError?.message,
+      });
+    }
 
-    res.json({
+    return res.json({
       insights: responseText,
-      model_used: models.find(m=>responseText.includes(m)) || "fallback",
+      model_used: modelUsed,
     });
-
   } catch (err) {
     console.error("AI Insights Error:", err);
-    res.status(500).json({ message: "AI insights error" });
+    return res.status(500).json({ message: "AI insights error" });
   }
 };
