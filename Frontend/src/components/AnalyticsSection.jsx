@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import axios from "axios";
 import { useAuth } from "../context/useAuth.jsx";
 import { useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext.jsx";
-
 
 import {
   ResponsiveContainer,
@@ -20,13 +18,22 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import api from "../service/api.js";
 
 const COLORS = [
-  "#4f46e5", "#06b6d4", "#06a34a", "#f97316",
-  "#ef4444", "#8b5cf6", "#f59e0b", "#10b981",
-  "#ef6ab4", "#6366f1", "#14b8a6", "#fb7185"
+  "#4f46e5",
+  "#06b6d4",
+  "#06a34a",
+  "#f97316",
+  "#ef4444",
+  "#8b5cf6",
+  "#f59e0b",
+  "#10b981",
+  "#ef6ab4",
+  "#6366f1",
+  "#14b8a6",
+  "#fb7185",
 ];
-
 
 // -------- UTILITIES ----------
 function toNumber(x) {
@@ -54,8 +61,7 @@ function normalizeMonth(v) {
 export default function AnalyticsSection() {
   const { token } = useAuth();
   const { theme } = useContext(ThemeContext);
-  const axisColor = theme === "dark" ? "#e5e7eb" : "#1f2937";  
-
+  const axisColor = theme === "dark" ? "#e5e7eb" : "#1f2937";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -88,9 +94,7 @@ export default function AnalyticsSection() {
     setError("");
 
     try {
-      const res = await axios.get("http://localhost:3000/api/analytics", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/api/analytics");
 
       const payload = res.data || {};
 
@@ -192,7 +196,12 @@ export default function AnalyticsSection() {
   // -------- FILTERED DATA ----------
   const filtered = useMemo(() => {
     if (filterType === "all") {
-      return { pie: categoryTotals, bar: monthlyTotals, line: dailyTrend, total };
+      return {
+        pie: categoryTotals,
+        bar: monthlyTotals,
+        line: dailyTrend,
+        total,
+      };
     }
     if (filterType === "month") {
       if (!selectedMonth) return { pie: [], bar: [], line: [], total: 0 };
@@ -249,12 +258,13 @@ export default function AnalyticsSection() {
 
   // ---------- MAIN UI ----------
   return (
-    <div className="
+    <div
+      className="
       bg-white/30 dark:bg-gray-800/30
       backdrop-blur-xl border border-white/30 dark:border-gray-700/40
       p-6 rounded-2xl shadow-lg transition-all duration-300
-    ">
-
+    "
+    >
       {/* Header + Filters */}
       <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
         <div>
@@ -313,7 +323,6 @@ export default function AnalyticsSection() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-
         {/* PIE CHART */}
         <div className="bg-white/20 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-700/40 p-4 rounded-xl">
           <p className="font-medium mb-2 text-sm text-gray-900 dark:text-gray-100">
@@ -334,7 +343,9 @@ export default function AnalyticsSection() {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
+                <ReTooltip
+                  formatter={(value) => `₹${Number(value).toFixed(2)}`}
+                />
                 <Legend wrapperStyle={{ color: "var(--text-color)" }} />
               </PieChart>
             </ResponsiveContainer>
@@ -350,7 +361,10 @@ export default function AnalyticsSection() {
           <div style={{ width: "100%", height: 260 }}>
             <ResponsiveContainer>
               <BarChart data={bar}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.15)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.15)"
+                />
 
                 <XAxis
                   dataKey="month"
@@ -358,12 +372,11 @@ export default function AnalyticsSection() {
                   tick={{ fill: axisColor }}
                 />
 
-                <YAxis
-                  stroke={axisColor}
-                  tick={{ fill: axisColor }}
-                />
+                <YAxis stroke={axisColor} tick={{ fill: axisColor }} />
 
-                <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
+                <ReTooltip
+                  formatter={(value) => `₹${Number(value).toFixed(2)}`}
+                />
 
                 <Bar dataKey="total">
                   {bar.map((_, i) => (
@@ -384,35 +397,39 @@ export default function AnalyticsSection() {
           <div style={{ width: "100%", height: 260 }}>
             <ResponsiveContainer>
               <LineChart data={line}>
-
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.15)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.15)"
+                />
 
                 <XAxis
                   dataKey="date"
                   tick={{ fill: axisColor }}
                   stroke={axisColor}
-                  
                   tickFormatter={(value) => {
                     const d = new Date(value);
                     if (isNaN(d)) return value;
                     return `${String(d.getDate()).padStart(2, "0")}-${String(
-                      d.getMonth() + 1
+                      d.getMonth() + 1,
                     ).padStart(2, "0")}-${d.getFullYear()}`;
                   }}
                 />
 
-                <YAxis
-                  tick={{ fill: axisColor }}
-                  stroke={axisColor}
-                />
+                <YAxis tick={{ fill: axisColor }} stroke={axisColor} />
 
-                <ReTooltip formatter={(value) => `₹${Number(value).toFixed(2)}`} />
-                <Line type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} />
+                <ReTooltip
+                  formatter={(value) => `₹${Number(value).toFixed(2)}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#06b6d4"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
 
       {/* CATEGORY LIST */}
@@ -438,7 +455,6 @@ export default function AnalyticsSection() {
           <p className="text-gray-600 dark:text-gray-400">No category data</p>
         )}
       </div>
-
     </div>
   );
 }

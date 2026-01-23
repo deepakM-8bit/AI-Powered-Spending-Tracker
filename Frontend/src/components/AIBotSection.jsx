@@ -1,10 +1,7 @@
-import { useAuth } from "../context/useAuth.jsx";
 import { useState, useRef } from "react";
-import axios from "axios";
+import api from "../service/api.js";
 
 export default function AiInsights() {
-  const { token } = useAuth();
-
   const [insights, setInsights] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +10,7 @@ export default function AiInsights() {
     "Analyzing...",
     "Getting your analytics...",
     "Reviewing your spendings...",
-    "Preparing the insights..."
+    "Preparing the insights...",
   ];
 
   const [loadingIndex, setLoadingIndex] = useState(0);
@@ -26,7 +23,7 @@ export default function AiInsights() {
     // Start rotating text
     intervalRef.current = setInterval(() => {
       setLoadingIndex((prev) => {
-        if (prev < loadingTexts.length - 1){
+        if (prev < loadingTexts.length - 1) {
           return prev + 1;
         } else {
           clearInterval(intervalRef.current);
@@ -36,9 +33,7 @@ export default function AiInsights() {
     }, 4000);
 
     try {
-      const res = await axios.get("http://localhost:3000/api/ai/insights", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get("/api/ai/insights");
 
       setInsights(res.data.insights);
     } catch (err) {

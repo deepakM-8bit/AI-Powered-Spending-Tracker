@@ -1,10 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../context/useAuth.jsx";
+import api from "../service/api.js";
 
 export default function ExpenseForm() {
-  const { token } = useAuth();
-
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -20,11 +17,7 @@ export default function ExpenseForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await axios.post(
-      "http://localhost:3000/api/expenses",
-      form,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    await api.post("/api/expenses", form);
 
     setForm({
       title: "",
@@ -60,7 +53,6 @@ export default function ExpenseForm() {
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         <input
           name="title"
           placeholder="Title"
@@ -87,7 +79,9 @@ export default function ExpenseForm() {
           required
           className={baseField}
         >
-          <option value="" disabled>Select Category</option>
+          <option value="" disabled>
+            Select Category
+          </option>
           <option value="Food & Drinks">Food & Drinks</option>
           <option value="Transportation">Transportation</option>
           <option value="Shopping">Shopping</option>
@@ -133,7 +127,6 @@ export default function ExpenseForm() {
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
-
       </div>
 
       {/* Clean minimalist button */}

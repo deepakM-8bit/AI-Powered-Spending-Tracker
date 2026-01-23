@@ -1,12 +1,12 @@
 import { useAuth } from "../context/useAuth.jsx";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../service/api.js";
 
 export default function HeroSection() {
   const { user, token } = useAuth();
   const [summary, setSummary] = useState({
     weekTotal: 0,
-    monthTotal: 0
+    monthTotal: 0,
   });
 
   // helper: convert a Date object (or date-string) to YYYY-MM-DD in local timezone
@@ -23,9 +23,7 @@ export default function HeroSection() {
 
     const fetchSummary = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/analytics", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get("/api/analytics");
         const data = res.data || {};
         const dailyTrend = data.dailyTrend || [];
         const monthlyTotals = data.monthlyTotals || [];
@@ -42,7 +40,7 @@ export default function HeroSection() {
         const daily = dailyTrend.map((d) => {
           return {
             dateStr: toLocalDateStr(d.date),
-            total: Number(d.total || 0)
+            total: Number(d.total || 0),
           };
         });
 
@@ -89,11 +87,14 @@ export default function HeroSection() {
         Here's your expense overview.
       </p>
 
-      <div className="mt-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border border-gray-200 dark:border-gray-700/30 
-      rounded-2xl shadow backdrop-blur-xl p-6 flex flex-col md:flex-row justify-between text-center gap-6 transition-colors">
-        
+      <div
+        className="mt-6 bg-white/30 dark:bg-gray-800/30 backdrop-blur-xl border border-gray-200 dark:border-gray-700/30 
+      rounded-2xl shadow p-6 flex flex-col md:flex-row justify-between text-center gap-6 transition-colors"
+      >
         <div className="flex-1">
-          <p className="text-gray-700 dark:text-gray-100">Spent in Last 7 Days</p>
+          <p className="text-gray-700 dark:text-gray-100">
+            Spent in Last 7 Days
+          </p>
           <h3 className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
             ₹{summary.weekTotal.toFixed(2)}
           </h3>
@@ -105,7 +106,6 @@ export default function HeroSection() {
             ₹{summary.monthTotal.toFixed(2)}
           </h3>
         </div>
-
       </div>
     </section>
   );

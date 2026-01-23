@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth.jsx";
 import Navbar from "../components/Navbar.jsx";
-import axios from "axios";
+import api from "../service/api.js";
 import { ThemeContext } from "../context/ThemeContext.jsx";
 
 export default function Login() {
@@ -12,7 +12,7 @@ export default function Login() {
 
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +29,7 @@ export default function Login() {
     setErrorMsg("");
 
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/login", form);
+      const res = await api.post("/api/auth/login", form);
       login(res.data.token, res.data.user);
       navigate("/dashboard");
     } catch (err) {
@@ -42,22 +42,32 @@ export default function Login() {
   return (
     <>
       <Navbar showUserActions={false} />
-      
-      <div className="min-h-screen flex items-center justify-center px-4 
-        bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24">
 
-        <div className="
+      <div
+        className="min-h-screen flex items-center justify-center px-4 
+        bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-24"
+      >
+        <div
+          className="
           w-full max-w-md p-8 rounded-3xl 
           bg-white/40 dark:bg-gray-800/40 
           backdrop-blur-xl shadow-2xl border border-white/20
-        ">
-
+        "
+        >
           <h2 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'
-              strokeWidth='1.5' stroke='currentColor'
-              className='size-16 mx-auto mb-3 text-gray-800 dark:text-gray-200'>
-              <path strokeLinecap='round' strokeLinejoin='round'
-                d='M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z' />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-16 mx-auto mb-3 text-gray-800 dark:text-gray-200"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+              />
             </svg>
             Welcome Back
           </h2>
@@ -98,7 +108,7 @@ export default function Login() {
                 Password
               </label>
               <input
-                type={showPassword? "text" : "password"}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 required
                 value={form.password}
@@ -116,16 +126,16 @@ export default function Login() {
               />
             </div>
 
-              {/* Show Password Checkbox */}
-              <label className="flex items-center gap-2  text-sm text-gray-700 dark:text-gray-300">
-                <input
-                  type="checkbox"
-                  checked={showPassword}
-                  onChange={() => setShowPassword(!showPassword)}
-                  className="w-4 h-4"
-                />
-                Show Password
-              </label>
+            {/* Show Password Checkbox */}
+            <label className="flex items-center gap-2  text-sm text-gray-700 dark:text-gray-300">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={() => setShowPassword(!showPassword)}
+                className="w-4 h-4"
+              />
+              Show Password
+            </label>
 
             <button
               type="submit"

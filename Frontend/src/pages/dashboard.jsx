@@ -41,11 +41,8 @@ export default function Dashboard() {
 
       <FooterSection />
 
-      {/* ----------------------------------------------------------
-          PREMIUM SMOOTH SLIDE-OVER PANEL (ALWAYS MOUNTED)
-      ---------------------------------------------------------- */}
       <>
-        {/* PREMIUM FADE-IN BACKDROP */}
+        {/* FADE-IN BACKDROP */}
         <div
           onClick={() => navigate("/dashboard")}
           className={`
@@ -55,7 +52,7 @@ export default function Dashboard() {
           `}
         />
 
-        {/* PREMIUM SLIDE-IN DRAWER PANEL */}
+        {/* SLIDE-IN DRAWER PANEL */}
         <aside
           className={`
             fixed top-0 right-0 h-full z-50
@@ -73,9 +70,8 @@ export default function Dashboard() {
           role="dialog"
           aria-modal="true"
         >
-
           {/* TOP BAR */}
-          <div 
+          <div
             className={`
               flex items-center justify-between mb-5
               transition-all duration-700 delay-150
@@ -101,13 +97,13 @@ export default function Dashboard() {
                 transition
               "
             >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 16 16" 
-                fill="currentColor" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
                 className="size-5"
               >
-                <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z"/>
+                <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
               </svg>
               Close
             </button>
@@ -124,7 +120,6 @@ export default function Dashboard() {
             <AnalyticsSection />
             <AIBotSection />
           </div>
-
         </aside>
       </>
     </div>
