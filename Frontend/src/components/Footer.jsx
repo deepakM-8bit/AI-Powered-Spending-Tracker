@@ -12,25 +12,30 @@ export const FooterSection = () => {
     >
       <div className="max-w-7xl mx-auto text-center text-gray-600 dark:text-gray-300 px-6 md:px-10">
         <div className="flex flex-col md:flex-row md:justify-between items-center gap-6">
-          
           <div>
             <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               AI Expense Tracker
             </p>
             <p className="mt-2 text-sm opacity-80">
-              Made with ❤️ to help you spend smarter.
+              Made to help you spend smarter.
             </p>
 
             <p className="text-sm mt-1 text-blue-600 dark:text-blue-400 font-medium">
-              Made by Deepak ❤️
+              Made by Deepak
             </p>
           </div>
 
           {/* Links */}
           <div className="flex gap-5 items-center">
-            <a href="#" className="text-sm hover:underline">Privacy</a>
-            <a href="#" className="text-sm hover:underline">Terms</a>
-            <a href="#" className="text-sm hover:underline">Contact</a>
+            <a href="#" className="text-sm hover:underline">
+              Privacy
+            </a>
+            <a href="#" className="text-sm hover:underline">
+              Terms
+            </a>
+            <a href="#" className="text-sm hover:underline">
+              Contact
+            </a>
           </div>
         </div>
 
