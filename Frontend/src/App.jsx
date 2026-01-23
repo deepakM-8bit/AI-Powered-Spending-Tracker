@@ -5,11 +5,10 @@ const App = () => {
 
   return(
     <>
-      
+         
       <AuthProvider>
         <AppRouter />
-      </AuthProvider>
-      
+      </AuthProvider>    
 
     </>
   );
