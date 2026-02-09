@@ -1,7 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import pool from "../db.js";
+import { response } from "express";
 
-const models = ["gemini-1.5-", "gemini-1.5-pro"];
+const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 const getStatus = (err) =>
   err?.status || err?.statusCode || err?.response?.status || null;
@@ -42,7 +43,7 @@ export const aiInsights = async (req, res) => {
       trend: trend.rows,
     };
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const genAI = new GoogleGenAI({ apikey: process.env.GEMINI_API_KEY });
 
     const prompt = `
 You are an AI financial insights engine. 
@@ -90,10 +91,12 @@ ${JSON.stringify(analyticsData, null, 2)}
       try {
         console.log(`Trying model: ${modelName}`);
 
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
+        const response = await genAI.models.generateContent({
+          model: modelName,
+          contents: prompt,
+        });
 
-        responseText = result.response.text();
+        responseText = response.text;
         modelUsed = modelName;
 
         console.log(`Success - model used: ${modelName}`);
