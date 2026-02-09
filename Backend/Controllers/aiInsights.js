@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../db.js";
 
-const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
 
 const getStatus = (err) =>
   err?.status || err?.statusCode || err?.response?.status || null;
