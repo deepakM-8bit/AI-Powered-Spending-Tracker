@@ -1,10 +1,12 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import pool from "../db.js";
 
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
-const userCache = new Map(); // in-memory cache
+const userCache = new Map();
 
 export const aiInsights = async (req, res) => {
   const userId = req.user.id;
@@ -35,7 +37,7 @@ export const aiInsights = async (req, res) => {
       [userId],
     );
 
-    // Preprocess Data
+    // DATA SUMMARY
     const totalSpend = cat.rows.reduce((s, c) => s + Number(c.total), 0);
     const topCategory = cat.rows.sort((a, b) => b.total - a.total)[0];
     const highestDay = trend.rows.sort((a, b) => b.total - a.total)[0];
@@ -58,7 +60,7 @@ Highest spend day: ${highestDay?.date} (₹${highestDay?.total})
 Months recorded: ${monthly.rows.length}
 `;
 
-    // PROMPT
+    // CLEAN PROMPT
     const prompt = `
 You are a financial insights AI. Give short bullet insights only.
 
@@ -69,15 +71,19 @@ Return structured insights:
 Key Highlights, Category Breakdown, Behavior Patterns, Savings Tips, Prediction, Alerts.
 `;
 
-    //  AI CALL
-    const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: prompt,
+    // OPENAI CALL
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4.1-nano",
+      messages: [
+        { role: "system", content: "You are a financial insights assistant." },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.4,
     });
 
-    const insights = response.text;
+    const insights = completion.choices[0].message.content;
 
-    // Cache result
+    // Cache
     userCache.set(userId, {
       data: insights,
       timestamp: Date.now(),
