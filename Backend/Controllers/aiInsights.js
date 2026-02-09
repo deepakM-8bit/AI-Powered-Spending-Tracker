@@ -1,11 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import pool from "../db.js";
 
-const models = [
-  "gemini-2.5-flash-lite-preview-09-2025",
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash-preview-09-2025",
-];
+const models = ["gemini-1.5-flash", "gemini-3-flash-preview", "gemini-1.5-pro"];
 
 const genAI = new GoogleGenAI({ apikey: process.env.GEMINI_API_KEY });
 
