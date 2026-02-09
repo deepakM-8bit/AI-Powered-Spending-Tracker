@@ -1,137 +1,89 @@
 import { GoogleGenAI } from "@google/genai";
 import pool from "../db.js";
-import { response } from "express";
 
-const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const getStatus = (err) =>
-  err?.status || err?.statusCode || err?.response?.status || null;
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const userCache = new Map(); // in-memory cache
 
 export const aiInsights = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Fetch analytics data
+    // Check cache
+    const cached = userCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return res.json({ insights: cached.data, cached: true });
+    }
+
+    // Fetch analytics
     const cat = await pool.query(
       `SELECT category, SUM(amount) AS total
-       FROM expenses WHERE user_id=$1
-       GROUP BY category`,
+       FROM expenses WHERE user_id=$1 GROUP BY category`,
       [userId],
     );
 
     const monthly = await pool.query(
-      `SELECT TO_CHAR("date", 'YYYY-MM') AS month,
-       SUM(amount) AS total
-       FROM expenses WHERE user_id=$1
-       GROUP BY month
-       ORDER BY month ASC`,
+      `SELECT TO_CHAR(date,'YYYY-MM') AS month, SUM(amount) AS total
+       FROM expenses WHERE user_id=$1 GROUP BY month ORDER BY month`,
       [userId],
     );
 
     const trend = await pool.query(
-      `SELECT "date"::date AS date,
-       SUM(amount) AS total
-       FROM expenses WHERE user_id=$1
-       GROUP BY date
-       ORDER BY date ASC`,
+      `SELECT date::date AS date, SUM(amount) AS total
+       FROM expenses WHERE user_id=$1 GROUP BY date ORDER BY date`,
       [userId],
     );
 
-    const analyticsData = {
-      categories: cat.rows,
-      monthly: monthly.rows,
-      trend: trend.rows,
-    };
+    // Preprocess Data
+    const totalSpend = cat.rows.reduce((s, c) => s + Number(c.total), 0);
+    const topCategory = cat.rows.sort((a, b) => b.total - a.total)[0];
+    const highestDay = trend.rows.sort((a, b) => b.total - a.total)[0];
 
-    const genAI = new GoogleGenAI({ apikey: process.env.GEMINI_API_KEY });
+    const firstMonth = monthly.rows[0];
+    const lastMonth = monthly.rows[monthly.rows.length - 1];
 
-    const prompt = `
-You are an AI financial insights engine. 
-Generate short, clear, bullet-point insights only. No long paragraphs.
+    const trendDirection =
+      lastMonth && firstMonth
+        ? lastMonth.total > firstMonth.total
+          ? "increasing"
+          : "decreasing"
+        : "stable";
 
-FORMAT STRICTLY LIKE THIS:
-
-📝 Key Highlights
-• (1 line insight)
-• (1 line insight)
-• (1 line insight)
-
-📊 Category Breakdown
-• Top category: (category + ₹amount)
-• (Short note about increases/decreases)
-• (Short note about wasteful spending)
-
-📅 Behavior Patterns
-• Weekday vs weekend summary (1 line)
-• Highest spend day (1 line)
-• Any unusual pattern (1 line)
-
-💡 Savings Tips
-• Tip 1 (very short)
-• Tip 2 (very short)
-• Tip 3 (very short)
-
-🔮 Prediction
-• Next month spend prediction (1 short line)
-
-⚠ Alerts
-• (Only if something looks unusual, keep it 1 line)
-
-Make everything short, clear, and professional.
-
-USER DATA:
-${JSON.stringify(analyticsData, null, 2)}
+    const summary = `
+Total spend: ₹${totalSpend}
+Top category: ${topCategory?.category} (₹${topCategory?.total})
+Spending trend: ${trendDirection}
+Highest spend day: ${highestDay?.date} (₹${highestDay?.total})
+Months recorded: ${monthly.rows.length}
 `;
 
-    let responseText = null;
-    let lastError = null;
-    let modelUsed = null;
+    // PROMPT
+    const prompt = `
+You are a financial insights AI. Give short bullet insights only.
 
-    for (const modelName of models) {
-      try {
-        console.log(`Trying model: ${modelName}`);
+DATA:
+${summary}
 
-        const response = await genAI.models.generateContent({
-          model: modelName,
-          contents: prompt,
-        });
+Return structured insights:
+Key Highlights, Category Breakdown, Behavior Patterns, Savings Tips, Prediction, Alerts.
+`;
 
-        responseText = response.text;
-        modelUsed = modelName;
-
-        console.log(`Success - model used: ${modelName}`);
-        break;
-      } catch (err) {
-        const status = getStatus(err);
-        lastError = err;
-
-        console.log(`Failed model: ${modelName}`, {
-          status,
-          message: err?.message,
-        });
-
-        // if overloaded / rate limited / server unstable => try next model
-        if ([429, 500, 502, 503, 504].includes(status)) {
-          continue;
-        }
-
-        // unknown error -> still try next model (recommended)
-        continue;
-      }
-    }
-
-    if (!responseText) {
-      return res.status(503).json({
-        message:
-          "All AI models are temporarily unavailable (overloaded). Try again shortly.",
-        error: lastError?.message,
-      });
-    }
-
-    return res.json({
-      insights: responseText,
-      model_used: modelUsed,
+    //  AI CALL
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.5-flash-lite",
+      contents: prompt,
     });
+
+    const insights = response.text;
+
+    // Cache result
+    userCache.set(userId, {
+      data: insights,
+      timestamp: Date.now(),
+    });
+
+    return res.json({ insights, cached: false });
   } catch (err) {
     console.error("AI Insights Error:", err);
     return res.status(500).json({ message: "AI insights error" });
