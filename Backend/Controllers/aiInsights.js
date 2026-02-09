@@ -1,11 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import pool from "../db.js";
 
-const models = [
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-2.0-flash",
-];
+const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 const getStatus = (err) =>
   err?.status || err?.statusCode || err?.response?.status || null;
@@ -19,7 +15,7 @@ export const aiInsights = async (req, res) => {
       `SELECT category, SUM(amount) AS total
        FROM expenses WHERE user_id=$1
        GROUP BY category`,
-      [userId]
+      [userId],
     );
 
     const monthly = await pool.query(
@@ -28,7 +24,7 @@ export const aiInsights = async (req, res) => {
        FROM expenses WHERE user_id=$1
        GROUP BY month
        ORDER BY month ASC`,
-      [userId]
+      [userId],
     );
 
     const trend = await pool.query(
@@ -37,7 +33,7 @@ export const aiInsights = async (req, res) => {
        FROM expenses WHERE user_id=$1
        GROUP BY date
        ORDER BY date ASC`,
-      [userId]
+      [userId],
     );
 
     const analyticsData = {
