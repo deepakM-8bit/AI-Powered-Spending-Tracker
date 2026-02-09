@@ -1,10 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import pool from "../db.js";
 
-const models = ["gemini-1.5-flash", "gemini-3-flash-preview", "gemini-1.5-pro"];
+const models = [
+  "gemini-2.0-flash",
+  "gemini-3-flash-preview",
+  "gemini-2.0-flash-exp",
+];
 
-const genAI = new GoogleGenAI({ apikey: process.env.GEMINI_API_KEY });
-
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const getStatus = (err) =>
   err?.status || err?.statusCode || err?.response?.status || null;
 
