@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       • (1 line insight)
 
       📊 Category Breakdown
-      • Top category: (category + amount)
+      • Top category: (category + ₹amount)
       • (Short note about increases/decreases)
 
       💡 Savings Tips
