@@ -19,31 +19,50 @@ export default function AiInsights() {
   const generateInsights = async () => {
     setLoading(true);
     setLoadingIndex(0);
+    setInsights("");
 
-    // Start rotating text
+    // Start rotating text (Fixed to loop continuously)
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setLoadingIndex((prev) => {
         if (prev < loadingTexts.length - 1) {
           return prev + 1;
         } else {
-          clearInterval(intervalRef.current);
-          return prev;
+          return 0; // Loop back to start so it doesn't freeze
         }
       });
-    }, 4000);
+    }, 3000);
 
     try {
+      // 1. Get Data from Render
       const res = await api.get("/api/ai/insights");
 
-      setInsights(res.data.insights);
+      const analyticsData = res.data.data || res.data;
+
+      console.log("Step 1: Got data from render", analyticsData);
+
+      // 2. Send to Vercel AI
+      const aiRes = await fetch("/api/generate-insight", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ analyticsData }),
+      });
+
+      if (!aiRes.ok) {
+        throw new Error(`Vercel API error: ${aiRes.statusText}`);
+      }
+
+      const aiData = await aiRes.json();
+      setInsights(aiData.insights);
     } catch (err) {
       console.error(err);
       setInsights("AI is currently busy. Try again in a moment ❤️");
+    } finally {
+      clearInterval(intervalRef.current);
+      setLoading(false);
     }
-
-    // Stop text rotation
-    clearInterval(intervalRef.current);
-    setLoading(false);
   };
 
   return (
@@ -68,6 +87,7 @@ export default function AiInsights() {
           className="
             relative inline-flex items-center justify-center px-1.5 py-1.5 rounded-xl
             text-white font-medium overflow-hidden transition-all duration-300
+            disabled:opacity-70 disabled:cursor-not-allowed
           "
         >
           {/* Moving Gradient Border */}
@@ -82,11 +102,11 @@ export default function AiInsights() {
           {/* Inner Background */}
           <span
             className="
-              relative px-3 py-1 z-10 block rounded-lg
+              relative px-3 py-1 z-10 rounded-lg
               bg-sky-400/20 dark:bg-blue-900/30
               backdrop-blur-md
               hover:bg-blue-700/30 dark:hover:bg-blue-300/20
-              transition
+              transition w-full h-full flex items-center justify-center
             "
           >
             {loading ? loadingTexts[loadingIndex] : "Generate Insights"}
