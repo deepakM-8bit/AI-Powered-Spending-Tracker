@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 export default async function handler(req, res) {
-  // 1. CORS Setup (Crucial for React to talk to this)
+  // 1. CORS Setup
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -13,39 +13,23 @@ export default async function handler(req, res) {
     "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
   );
 
-  // Handle preflight check
   if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
   }
 
-  // 2. Security Check
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
-
-  // 3. Get Data from Frontend
+  // 2. Get Data
   const { analyticsData } = req.body;
 
-  if (!analyticsData) {
-    return res.status(400).json({ error: "No analytics data provided" });
-  }
-
   if (!process.env.GEMINI_API_KEY) {
-    console.error("API Key Missing!");
-    return res
-      .status(500)
-      .json({ error: "Server Configuration Error (Missing Key)" });
+    return res.status(500).json({ error: "Missing API Key" });
   }
 
   try {
-    // 4. Initialize AI (Vercel servers are in US = No Location Error!)
+    // 3. Initialize the NEW Client
     const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    // Use the reliable standard model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    // 5. The Prompt (Cleaned up for JSON safety)
+    // 4. The Prompt
     const prompt = `
       You are an AI financial insights engine. 
       Analyze this user data: ${JSON.stringify(analyticsData)}
@@ -69,12 +53,19 @@ export default async function handler(req, res) {
       • (1 line prediction)
     `;
 
-    // 6. Generate
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+    });
 
-    // 7. Send Success Response
+    // 6. Get Text
+    const text = response.text;
+
     return res.status(200).json({ insights: text });
   } catch (error) {
     console.error("Vercel AI Error:", error);
