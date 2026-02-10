@@ -4,10 +4,7 @@ export default async function handler(req, res) {
   // 1. CORS Setup
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,OPTIONS,PATCH,DELETE,POST,PUT",
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,POST");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
@@ -18,18 +15,23 @@ export default async function handler(req, res) {
     return;
   }
 
-  // 2. Get Data
   const { analyticsData } = req.body;
 
   if (!process.env.GEMINI_API_KEY) {
     return res.status(500).json({ error: "Missing API Key" });
   }
 
+  // --- THE MODEL LIST (Priority Order) ---
+  const models = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash-preview-09-2025",
+    "gemini-2.5-flash-lite-preview-09-2025",
+  ];
+
   try {
-    // 3. Initialize the NEW Client
     const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    // 4. The Prompt
     const prompt = `
       You are an AI financial insights engine. 
       Analyze this user data: ${JSON.stringify(analyticsData)}
@@ -43,35 +45,56 @@ export default async function handler(req, res) {
 
       📊 Category Breakdown
       • Top category: (category + amount)
-      • (Short note)
+      • (Short note about increases/decreases)
 
       💡 Savings Tips
-      • (Tip 1)
-      • (Tip 2)
+      • Tip 1 (very short)
+      • Tip 2 (very short)
 
       🔮 Prediction
-      • (1 line prediction)
+      • Next month spend prediction(1 line)
+
+      ⚠ Alerts
+      • (Only if something looks unusual, keep it 1 line)
     `;
 
-    const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-    });
+    let lastError = null;
 
-    // 6. Get Text
-    const text = response.text;
+    // --- THE FALLBACK LOOP ---
+    for (const modelName of models) {
+      try {
+        console.log(`Attempting generation with: ${modelName}`);
 
-    return res.status(200).json({ insights: text });
+        const response = await genAI.models.generateContent({
+          model: modelName,
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+        });
+
+        const text = response.text();
+        console.log(`Success with ${modelName}!`);
+
+        return res.status(200).json({
+          insights: text,
+          model_used: modelName,
+        });
+      } catch (err) {
+        console.warn(`Model ${modelName} failed. Reason:`, err.message);
+        lastError = err;
+        continue;
+      }
+    }
+
+    throw lastError || new Error("All models failed.");
   } catch (error) {
-    console.error("Vercel AI Error:", error);
+    console.error("Final Vercel AI Error:", error);
     return res.status(500).json({
       error: "Failed to generate insights",
-      details: error.message,
+      details: "All AI models are currently busy. Please try again later.",
     });
   }
 }
